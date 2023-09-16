@@ -133,25 +133,25 @@ func (r *runner) spawnWorkers(spawnCount int, quit chan bool, spawnCompleteFunc 
 		default:
 			atomic.AddInt32(&r.numClients, 1)
 			go func() {
-				for {
-					select {
-					case <-quit:
-						return
-					case <-r.shutdownChan:
-						return
-					default:
-						if r.rateLimitEnabled {
-							blocked := r.rateLimiter.Acquire()
-							if !blocked {
-								task := r.getTask()
-								r.safeRun(task.Fn)
-							}
-						} else {
+				// for {
+				select {
+				case <-quit:
+					return
+				case <-r.shutdownChan:
+					return
+				default:
+					if r.rateLimitEnabled {
+						blocked := r.rateLimiter.Acquire()
+						if !blocked {
 							task := r.getTask()
 							r.safeRun(task.Fn)
 						}
+					} else {
+						task := r.getTask()
+						r.safeRun(task.Fn)
 					}
 				}
+				// }
 			}()
 		}
 	}
